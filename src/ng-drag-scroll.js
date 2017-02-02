@@ -21,6 +21,7 @@
                 var onDragEnd = $parse($attributes.onDragEnd);
                 var axis = $attributes.axis || false;
                 var excludedClasses = $attributes.dragScrollExcludedClasses ? $attributes.dragScrollExcludedClasses.split(',') : [];
+                var notPreventDefault = false;
                 var startClientX;
                 var startClientY;
                 var lastClientX;
@@ -29,7 +30,10 @@
                 $scope.$watch($attributes.dragScroll, function(newValue) {
                     enabled = newValue !== undefined ? newValue : true;
                 });
-
+                $scope.$watch($attributes.notPreventDefault, function (newValue) {
+                    notPreventDefault = newValue !== undefined ? newValue == 'true' || newValue === true  : false;
+                });
+                
                 // Set event listeners
                 $element.on('mousedown', handleMouseDown);
 
@@ -77,9 +81,11 @@
                         lastClientY = startClientY = e.clientY;
 
                         clearSelection();
-
-                        e.preventDefault();
-                        e.stopPropagation();
+                        if(!notPreventDefault){
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                       
                     }
 
                 }
@@ -126,8 +132,10 @@
                                 $element[0].scrollTop -= (-lastClientY + (lastClientY = e.clientY));
                             }
                         }
-
-                        e.preventDefault();
+                        if(!notPreventDefault){
+                            e.preventDefault();
+                        }
+                        
                     }
                 }
 
