@@ -33,9 +33,17 @@
                 $scope.$watch($attributes.notPreventDefault, function (newValue) {
                     notPreventDefault = newValue !== undefined ? newValue == 'true' || newValue === true  : false;
                 });
+
+                function getClientXFromEvent(event) {
+                    return event.clientX || (event.touches && event.touches.length ? event.touches[event.touches.length - 1].clientX : undefined);
+                }
+
+                function getClientYFromEvent(event) {
+                    return event.clientY || (event.touches && event.touches.length ? event.touches[event.touches.length - 1].clientY : undefined);
+                }
                 
                 // Set event listeners
-                $element.on('mousedown', handleMouseDown);
+                $element.on('mousedown touchstart', handleMouseDown);
 
                 // Set destroy listener
                 $scope.$on('$destroy', destroy);
@@ -44,16 +52,16 @@
                  * Sets the event listeners for the mouseup and mousedown events
                  */
                 function setDragListeners () {
-                    angular.element($window).on('mouseup', handleMouseUp);
-                    angular.element($window).on('mousemove', handleMouseMove);
+                    angular.element($window).on('mouseup touchend', handleMouseUp);
+                    angular.element($window).on('mousemove touchmove', handleMouseMove);
                 }
 
                 /**
                  * Removes the event listeners for the mouseup and mousedown events
                  */
                 function removeDragListeners () {
-                    angular.element($window).off('mouseup', handleMouseUp);
-                    angular.element($window).off('mousemove', handleMouseMove);
+                    angular.element($window).off('mouseup touchend', handleMouseUp);
+                    angular.element($window).off('mousemove touchmove', handleMouseMove);
                 }
 
                 /**
@@ -62,6 +70,8 @@
                  */
                 function handleMouseDown (e) {
                     if(enabled){
+                        var clientX = getClientXFromEvent(e);
+                        var clientY = getClientYFromEvent(e);
                         for (var i= 0; i<excludedClasses.length; i++) {
                             if (angular.element(e.target).hasClass(excludedClasses[i])) {
                                 return false;
@@ -77,8 +87,8 @@
 
                         // Set 'pushed' state
                         pushed = true;
-                        lastClientX = startClientX = e.clientX;
-                        lastClientY = startClientY = e.clientY;
+                        lastClientX = startClientX = clientX;
+                        lastClientY = startClientY = clientY;
 
                         clearSelection();
                         if(!notPreventDefault){
@@ -96,9 +106,11 @@
                  */
                 function handleMouseUp (e) {
                     if(enabled){
+                        var clientX = getClientXFromEvent(e);
+                        var clientY = getClientYFromEvent(e);
                         var selectable = (e.target.attributes && 'drag-scroll-text' in e.target.attributes);
-                        var withinXConstraints = (e.clientX >= (startClientX - allowedClickOffset) && e.clientX <= (startClientX + allowedClickOffset));
-                        var withinYConstraints = (e.clientY >= (startClientY - allowedClickOffset) && e.clientY <= (startClientY + allowedClickOffset));
+                        var withinXConstraints = (clientX >= (startClientX - allowedClickOffset) && clientX <= (startClientX + allowedClickOffset));
+                        var withinYConstraints = (clientY >= (startClientY - allowedClickOffset) && clientY <= (startClientY + allowedClickOffset));
 
                         // Set 'pushed' state
                         pushed = false;
@@ -124,12 +136,14 @@
                  */
                 function handleMouseMove (e) {
                     if(enabled){
+                        var clientX = getClientXFromEvent(e);
+                        var clientY = getClientYFromEvent(e);
                         if (pushed) {
                             if(!axis || axis === 'x') {
-                                $element[0].scrollLeft -= (-lastClientX + (lastClientX = e.clientX));
+                                $element[0].scrollLeft -= (-lastClientX + (lastClientX = clientX));
                             }
                             if(!axis || axis === 'y') {
-                                $element[0].scrollTop -= (-lastClientY + (lastClientY = e.clientY));
+                                $element[0].scrollTop -= (-lastClientY + (lastClientY = clientY));
                             }
                         }
                         if(!notPreventDefault){
@@ -143,9 +157,9 @@
                  * Destroys all the event listeners
                  */
                 function destroy () {
-                    $element.off('mousedown', handleMouseDown);
-                    angular.element($window).off('mouseup', handleMouseUp);
-                    angular.element($window).off('mousemove', handleMouseMove);
+                    $element.off('mousedown touchstart', handleMouseDown);
+                    angular.element($window).off('mouseup touchend', handleMouseUp);
+                    angular.element($window).off('mousemove touchmove', handleMouseMove);
                 }
 
                 /**

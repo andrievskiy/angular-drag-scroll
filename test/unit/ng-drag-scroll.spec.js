@@ -36,6 +36,26 @@ ngDescribe({
                 expect(scope.onDragStart).toHaveBeenCalled();
 
             });
+            
+            it('should call onDragStart when starting to drag mobile', function () {
+                var window = angular.element(deps.$window);
+                var scope = deps.element.scope();
+
+                scope.onDragStart = jasmine.createSpy('onDragStart');
+
+                deps.element.triggerHandler({
+                    type: 'touchstart'
+                });
+
+                deps.element.triggerHandler({
+                    type: 'touchmove',
+                    clientX: 50,
+                    clientY: 0
+                });
+
+                expect(scope.onDragStart).toHaveBeenCalled();
+
+            });
 
             it('should call onDragEnd when the dragging ends', function () {
                 var window = angular.element(deps.$window);
@@ -55,6 +75,29 @@ ngDescribe({
 
                 window.triggerHandler({
                     type: 'mouseup'
+                });
+
+                expect(scope.onDragEnd).toHaveBeenCalled();
+            });
+            
+            it('should call onDragEnd when the dragging ends mobile', function () {
+                var window = angular.element(deps.$window);
+                var scope = deps.element.scope();
+
+                scope.onDragEnd = jasmine.createSpy('onDragEnd');
+
+                deps.element.triggerHandler({
+                    type: 'touchstart'
+                });
+
+                window.triggerHandler({
+                    type: 'touchmove',
+                    clientX: 50,
+                    clientY: 0
+                });
+
+                window.triggerHandler({
+                    type: 'touchend'
                 });
 
                 expect(scope.onDragEnd).toHaveBeenCalled();
